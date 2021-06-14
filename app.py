@@ -8,6 +8,13 @@ import numpy as np
 import tensorflow as tf
 import tensorflow as tf
 
+from tensorflow.compat.v1 import ConfigProto
+from tensorflow.compat.v1 import InteractiveSession
+
+config = ConfigProto()
+config.gpu_options.per_process_gpu_memory_fraction = 0.2
+config.gpu_options.allow_growth = True
+session = InteractiveSession(config=config)
 # Keras
 from tensorflow.keras.applications.resnet50 import preprocess_input
 from tensorflow.keras.models import load_model
@@ -68,29 +75,25 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/prediction', methods=['GET', 'POST'])
+@app.route('/predict', methods=['GET', 'POST'])
 def upload():
     if request.method == 'POST':
         # Get the file from post request
-        img = request.files['file']
+        f = request.files['file']
 
-        img_path = "uploads/" + img.filename
-        img.save(img_path) 
-
-        '''
         # Save the file to ./uploads
         basepath = os.path.dirname(__file__)
         file_path = os.path.join(
             basepath, 'uploads', secure_filename(f.filename))
         f.save(file_path)
-        '''
 
         # Make prediction
-        pred = model_predict(img_path, model)
-        #result=preds
-        return pred
+        preds = model_predict(file_path, model)
+        result=preds
+        return result
     return None
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(port=5001,debug=True)
+    
